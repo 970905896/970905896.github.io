@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蓝鲸电商 - 扫码支付购物平台</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .qrcode-container {
+            position: relative;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .qrcode-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px dashed #e2e8f0;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        .mobile-menu {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .mobile-menu.active {
+            max-height: 500px;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-shopping-bag text-blue-500 text-2xl mr-2"></i>
+                <span class="text-xl font-bold text-blue-600">蓝鲸电商</span>
+            </div>
+            
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="nav-link text-gray-600 hover:text-blue-500">首页</a>
+                <a href="#products" class="nav-link text-gray-600 hover:text-blue-500">商品分类</a>
+                <a href="#cart" class="nav-link text-gray-600 hover:text-blue-500">购物车</a>
+                <a href="#account" class="nav-link text-gray-600 hover:text-blue-500">个人中心</a>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <a href="#cart" class="relative">
+                    <i class="fas fa-shopping-cart text-gray-600 text-xl"></i>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                </a>
+                <button id="mobileMenuBtn" class="md:hidden text-gray-600">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="mobile-menu md:hidden bg-white px-4">
+            <div class="py-3 space-y-3">
+                <a href="#home" class="block py-2 text-gray-600 hover:text-blue-500 border-b border-gray-100">首页</a>
+                <a href="#products" class="block py-2 text-gray-600 hover:text-blue-500 border-b border-gray-100">商品分类</a>
+                <a href="#cart" class="block py-2 text-gray-600 hover:text-blue-500 border-b border-gray-100">购物车</a>
+                <a href="#account" class="block py-2 text-gray-600 hover:text-blue-500">个人中心</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 轮播图 -->
+    <section id="home" class="py-6">
+        <div class="container mx-auto px-4">
+            <div class="glass-card overflow-hidden">
+                <div class="relative h-64 md:h-96 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                    <div class="text-center px-6">
+                        <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">轻松购物 扫码即付</h1>
+                        <p class="text-white text-lg mb-6">精选好货，一键下单，安全便捷的扫码支付体验</p>
+                        <a href="#products" class="btn-primary inline-block px-8 py-3 rounded-full font-medium">立即选购</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 商品分类 -->
+    <section id="products" class="py-10 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+                <i class="fas fa-tags text-blue-500 mr-3"></i>商品分类
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <a href="#" class="bg-white rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-mobile-alt text-blue-500 text-xl"></i>
+                    </div>
+                    <span class="text-gray-700">数码电子</span>
+                </a>
+                <a href="#" class="bg-white rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-tshirt text-green-500 text-xl"></i>
+                    </div>
+                    <span class="text-gray-700">服装服饰</span>
+                </a>
+                <a href="#" class="bg-white rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-home text-yellow-500 text-xl"></i>
+                    </div>
+                    <span class="text-gray-700">家居生活</span>
+                </a>
+                <a href="#" class="bg-white rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-utensils text-red-500 text-xl"></i>
+                    </div>
+                    <span class="text-gray-700">食品生鲜</span>
+                </a>
+            </div>
+            
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">热门商品</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- 商品卡片1 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm transition-all duration-300">
+                    <div class="relative pb-[100%] bg-gray-100">
+                        <img src="https://s.coze.cn/image/30b3N8uzzzE/" alt="智能手机" class="absolute h-full w-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-gray-800 mb-1">旗舰智能手机</h4>
+                        <p class="text-sm text-gray-500 mb-3">6.7英寸AMOLED屏幕，骁龙8处理器</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-500 font-bold">¥3999</span>
+                            <button class="text-blue-500 hover:text-blue-600">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品卡片2 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm transition-all duration-300">
+                    <div class="relative pb-[100%] bg-gray-100">
+                        <img src="https://s.coze.cn/image/BHQMEExJYr8/" alt="无线耳机" class="absolute h-full w-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-gray-800 mb-1">无线蓝牙耳机</h4>
+                        <p class="text-sm text-gray-500 mb-3">主动降噪，30小时续航</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-500 font-bold">¥599</span>
+                            <button class="text-blue-500 hover:text-blue-600">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品卡片3 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm transition-all duration-300">
+                    <div class="relative pb-[100%] bg-gray-100">
+                        <img src="https://s.coze.cn/image/yfGu9CehaC0/" alt="运动鞋" class="absolute h-full w-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-gray-800 mb-1">男士运动鞋</h4>
+                        <p class="text-sm text-gray-500 mb-3">轻便透气，缓震设计</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-500 font-bold">¥299</span>
+                            <button class="text-blue-500 hover:text-blue-600">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品卡片4 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm transition-all duration-300">
+                    <div class="relative pb-[100%] bg-gray-100">
+                        <img src="https://s.coze.cn/image/WHkUyIQfvVc/" alt="智能手表" class="absolute h-full w-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-gray-800 mb-1">智能手表</h4>
+                        <p class="text-sm text-gray-500 mb-3">心率监测，50米防水</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-500 font-bold">¥1299</span>
+                            <button class="text-blue-500 hover:text-blue-600">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 购物车 -->
+    <section id="cart" class="py-10">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+                <i class="fas fa-shopping-cart text-blue-500 mr-3"></i>我的购物车
+            </h2>
+            
+            <div class="glass-card p-6">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">商品</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">单价</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">小计</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- 购物车商品1 -->
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded" src="https://s.coze.cn/image/btCi3bV1tkM/" alt="智能手机">
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">旗舰智能手机</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">¥3999</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <button class="w-8 h-8 border border-gray-300 rounded-l flex items-center justify-center">-</button>
+                                        <input type="text" value="1" class="w-12 h-8 border-t border-b border-gray-300 text-center">
+                                        <button class="w-8 h-8 border border-gray-300 rounded-r flex items-center justify-center">+</button>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">¥3999</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- 购物车商品2 -->
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded" src="https://s.coze.cn/image/x3aASEXjHCc/" alt="无线耳机">
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">无线蓝牙耳机</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">¥599</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <button class="w-8 h-8 border border-gray-300 rounded-l flex items-center justify-center">-</button>
+                                        <input type="text" value="1" class="w-12 h-8 border-t border-b border-gray-300 text-center">
+                                        <button class="w-8 h-8 border border-gray-300 rounded-r flex items-center justify-center">+</button>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">¥599</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <div class="bg-gray-50 p-4 rounded-lg w-full md:w-1/3">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">商品总价</span>
+                            <span class="font-medium">¥4598</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">运费</span>
+                            <span class="font-medium">¥0</span>
+                        </div>
+                        <div class="flex justify-between mb-4 border-t border-gray-200 pt-3">
+                            <span class="text-gray-800 font-semibold">应付总额</span>
+                            <span class="text-red-500 font-bold text-xl">¥4598</span>
+                        </div>
+                        <button class="btn-primary w-full py-3 rounded-lg font-medium">
+                            去结算
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 结算页面 -->
+    <section id="checkout" class="py-10 bg-gray-50 hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+                <i class="fas fa-receipt text-blue-500 mr-3"></i>订单结算
+            </h2>
+            
+            <div class="glass-card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">收货信息</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">收货人</label>
+                                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="张三">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                                <input type="tel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="13800138000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">收货地址</label>
+                                <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" rows="3">北京市朝阳区建国路88号</textarea>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-800 mt-8 mb-4">支付方式</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-500">
+                                <input type="radio" name="payment" class="h-5 w-5 text-blue-500" checked>
+                                <div>
+                                    <div class="font-medium">扫码支付</div>
+                                    <div class="text-sm text-gray-500">使用手机扫码完成支付</div>
+                                </div>
+                                <i class="fas fa-qrcode text-blue-500 ml-auto"></i>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">订单信息</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="mb-4">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-600">订单编号</span>
+                                    <span class="font-medium">DD20240520123456</span>
+                                </div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-600">下单时间</span>
+                                    <span class="font-medium">2024-05-20 14:30:22</span>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4 mb-4">
+                                <h4 class="text-md font-medium text-gray-800 mb-3">商品清单</h4>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">旗舰智能手机 ×1</span>
+                                        <span class="font-medium">¥3999</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">无线蓝牙耳机 ×1</span>
+                                        <span class="font-medium">¥599</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-600">商品总价</span>
+                                    <span class="font-medium">¥4598</span>
+                                </div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-600">运费</span>
+                                    <span class="font-medium">¥0</span>
+                                </div>
+                                <div class="flex justify-between mt-4 pt-3 border-t border-gray-200">
+                                    <span class="text-gray-800 font-semibold">应付总额</span>
+                                    <span class="text-red-500 font-bold text-xl">¥4598</span>
+                                </div>
+                            </div>
+                            
+                            <button id="confirmOrderBtn" class="btn-primary w-full py-3 rounded-lg font-medium mt-6">
+                                确认订单
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 支付页面 -->
+    <section id="payment" class="py-10 hidden">
+        <div class="container mx-auto px-4">
+            <div class="glass-card p-8 max-w-3xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">请扫码完成支付</h2>
+                    <p class="text-gray-600">使用手机扫描下方二维码完成支付</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="qrcode-container mb-4">
+                            <img src="https://s.coze.cn/image/AAuz20l8tuY/" alt="支付二维码" class="w-48 h-48">
+                        </div>
+                        <p class="text-sm text-gray-500">二维码有效时间: <span id="countdown" class="font-medium">03:00</span></p>
+                    </div>
+                    
+                    <div>
+                        <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                            <div class="flex items-center">
+                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                <span class="text-blue-800">请使用手机扫描二维码完成支付</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">订单编号</label>
+                                <div class="px-4 py-2 bg-gray-100 rounded-lg">DD20240520123456</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">应付金额</label>
+                                <div class="px-4 py-2 bg-gray-100 rounded-lg text-red-500 font-bold text-xl">¥4598</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm text-gray-500">支付方式</div>
+                                    <div class="font-medium">扫码支付</div>
+                                </div>
+                                <img src="https://s.coze.cn/image/cym1Uq4GNxg/" alt="支付方式" class="h-10">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <button id="paymentSuccessBtn" class="btn-primary px-8 py-3 rounded-lg font-medium">
+                        支付成功
+                    </button>
+                    <button id="paymentCancelBtn" class="ml-4 px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50">
+                        取消支付
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 订单确认页面 -->
+    <section id="orderConfirm" class="py-10 bg-gray-50 hidden">
+        <div class="container mx-auto px-4">
+            <div class="glass-card p-8 max-w-3xl mx-auto text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check-circle text-green-500 text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">支付成功</h2>
+                <p class="text-gray-600 mb-6">您的订单已支付成功，我们将尽快为您安排发货</p>
+                
+                <div class="bg-gray-50 p-6 rounded-lg mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="text-sm text-gray-500 mb-1">订单编号</div>
+                            <div class="font-medium">DD20240520123456</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500 mb-1">支付金额</div>
+                            <div class="font-medium text-red-500">¥4598</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500 mb-1">支付时间</div>
+                            <div class="font-medium">2024-05-20 14:35:46</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <a href="#products" class="btn-primary px-8 py-3 rounded-lg font-medium">
+                        继续购物
+                    </a>
+                    <a href="#account" class="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50">
+                        查看订单
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 个人中心 -->
+    <section id="account" class="py-10 hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+                <i class="fas fa-user-circle text-blue-500 mr-3"></i>个人中心
+            </h2>
+            
+            <div class="glass-card p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="md:col-span-1">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-500"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">张三</div>
+                                    <div class="text-xs text-gray-500">普通会员</div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <a href="#account" class="block px-3 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium">
+                                    <i class="fas fa-user mr-2"></i>个人信息
+                                </a>
+                                <a href="#account/orders" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-list-alt mr-2"></i>我的订单
+                                </a>
+                                <a href="#account/address" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>收货地址
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-3">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">个人信息</h3>
+                        
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                                    <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="张三" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">手机号码</label>
+                                    <input type="tel" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="13800138000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">电子邮箱</label>
+                                    <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="zhangsan@example.com">
+                                </div>
+                            </div>
+                            
+                            <button class="btn-primary px-6 py-2 rounded-lg font-medium">
+                                保存修改
+                            </button>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-800 mt-8 mb-4">最近订单</h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">订单编号</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">下单时间</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-600">DD20240520123456</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">2024-05-20 14:30</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">¥4598</td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已支付</span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <a href="#" class="text-blue-500 hover:text-blue-700">查看</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">蓝鲸电商</h3>
+                    <p class="text-gray-400">提供安全便捷的扫码支付购物体验</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-white">首页</a></li>
+                        <li><a href="#products" class="text-gray-400 hover:text-white">商品分类</a></li>
+                        <li><a href="#cart" class="text-gray-400 hover:text-white">购物车</a></li>
+                        <li><a href="#account" class="text-gray-400 hover:text-white">个人中心</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">帮助中心</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">购物指南</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">支付方式</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">配送方式</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">售后服务</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-2 text-gray-400"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                            <span class="text-gray-400">service@lanjing.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
+                <p>© 2024 蓝鲸电商 版权所有</p>
+                <p class="mt-2">页面内容均由 AI 生成，仅供参考</p>
+                <p class="mt-2">created by <a href="https://space.coze.cn" class="text-blue-400 hover:text-blue-300">coze space</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        });
+
+        // 页面导航切换
+        function showSection(sectionId) {
+            // 隐藏所有主要部分
+            document.querySelectorAll('section[id]:not(footer)').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // 显示目标部分
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // 滚动到顶部
+            window.scrollTo(0, 0);
+        }
+
+        // 设置导航链接点击事件
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                
+                // 特殊处理购物车按钮
+                if (targetId === 'cart') {
+                    showSection('cart');
+                } else if (targetId === 'account') {
+                    showSection('account');
+                } else {
+                    // 默认显示首页
+                    showSection('home');
+                }
+                
+                // 关闭移动端菜单
+                document.getElementById('mobileMenu').classList.remove('active');
+            });
+        });
+
+        // 结算按钮点击事件
+        document.querySelector('#cart button').addEventListener('click', function() {
+            showSection('checkout');
+        });
+
+        // 确认订单按钮点击事件
+        document.getElementById('confirmOrderBtn').addEventListener('click', function() {
+            showSection('payment');
+            
+            // 模拟倒计时
+            let timeLeft = 180;
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(function() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                timeLeft--;
+                
+                if (timeLeft < 0) {
+                    clearInterval(timer);
+                    countdownElement.textContent = "已过期";
+                }
+            }, 1000);
+        });
+
+        // 支付成功按钮点击事件
+        document.getElementById('paymentSuccessBtn').addEventListener('click', function() {
+            showSection('orderConfirm');
+        });
+
+        // 取消支付按钮点击事件
+        document.getElementById('paymentCancelBtn').addEventListener('click', function() {
+            showSection('checkout');
+        });
+
+        // 默认显示首页
+        showSection('home');
+    </script>
+</body>
+</html>
